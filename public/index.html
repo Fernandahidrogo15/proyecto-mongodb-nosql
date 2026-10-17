@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Cursos</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f4f9; color: #333; }
+        h2 { color: #2c3e50; }
+        form { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); width: 300px; margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; }
+        input[type="text"] { width: 100%; padding: 8px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #3498db; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; width: 100%; }
+        button:hover { background-color: #2980b9; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #2c3e50; color: white; }
+    </style>
+</head>
+<body>
+
+    <h2>Registro de Cursos</h2>
+    
+    <!-- Formulario para pedir el nombre del curso y botón para insertar -->
+    <form id="cursoForm">
+        <label for="nombre">Nombre del Curso:</label>
+        <input type="text" id="nombre" name="nombre" required placeholder="Ej. Base de Datos">
+        <button type="submit">Insertar Curso</button>
+    </form>
+
+    <h2>Lista de Cursos</h2>
+    
+    <!-- Tabla HTML para mostrar el JSON -->
+    <table>
+        <thead>
+            <tr>
+                <th>ID de MongoDB</th>
+                <th>Nombre del Curso</th>
+            </tr>
+        </thead>
+        <tbody id="tablaCursos">
+            <!-- Se llenará dinámicamente -->
+        </tbody>
+    </table>
+
+    <script>
+        async function cargarCursos() {
+            try {
+                const respuesta = await fetch('/api/cursos');
+                const cursos = await respuesta.json();
+                const tbody = document.getElementById('tablaCursos');
+                tbody.innerHTML = '';
+                
+                cursos.forEach(curso => {
+                    const fila = `<tr>
+                        <td>${curso._id}</td>
+                        <td>${curso.nombre}</td>
+                    </tr>`;
+                    tbody.innerHTML += fila;
+                });
+            } catch (error) {
+                console.error('Error al cargar los cursos:', error);
+            }
+        }
+
+        document.getElementById('cursoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nombre = document.getElementById('nombre').value;
+
+            try {
+                const respuesta = await fetch('/api/cursos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombre })
+                });
+
+                if (respuesta.ok) {
+                    document.getElementById('nombre').value = '';
+                    cargarCursos();
+                } else {
+                    alert('Error al insertar el curso');
+                }
+            } catch (error) {
+                console.error('Error en la petición:', error);
+            }
+        });
+
+        cargarCursos();
+    </script>
+</body>
+</html>
